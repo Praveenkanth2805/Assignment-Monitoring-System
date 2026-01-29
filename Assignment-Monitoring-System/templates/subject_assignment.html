@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{ department_name }} - Subject Assignments</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(180deg, #667eea, #764ba2);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            padding-top: 20px;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 22px;
+            letter-spacing: 1px;
+        }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid #fff;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        /* HEADER */
+        .header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 10px;
+            min-height: 80px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 20px;
+            text-align: center;
+            flex: 1;
+        }
+
+        .assignment-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 50px;
+            justify-content: center;
+        }
+
+        .assignment-item {
+            background: white;
+            width: 45%;
+            min-width: 220px;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .assignment-btn {
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .menu {
+            position: relative;
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: black;
+        }
+
+        .dropdown {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            z-index: 1;
+        }
+
+        .dropdown button,
+        .dropdown a {
+            display: block;
+            width: 100%;
+            padding: 8px 10px;
+            border: none;
+            background: none;
+            text-align: left;
+            cursor: pointer;
+            text-decoration: none;
+            color: #333;
+        }
+
+        .dropdown button:hover,
+        .dropdown a:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .form-container {
+            display: none;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin: 20px 0;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 5px;
+            background: #667eea;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin: 3px;
+        }
+
+        .btn:hover {
+            background: #764ba2;
+        }
+    </style>
+    <script>
+        let openDropdown = null;
+        function toggleDropdown(id) {
+            const el = document.getElementById(id);
+            if (openDropdown && openDropdown !== id) {
+                document.getElementById(openDropdown).style.display = 'none';
+            }
+            el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+            openDropdown = el.style.display === 'block' ? id : null;
+        }
+
+        function toggleForm(formId) {
+            const el = document.getElementById(formId);
+            el.style.display = el.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function showEditForm(assNum, assName, dueDate) {
+            const form = document.getElementById('edit-form');
+            form.style.display = 'block';
+            document.getElementById('edit-ass-num').value = assNum;
+            document.getElementById('original-ass-num').value = assNum;
+            document.getElementById('edit-ass-name').value = assName;
+            document.getElementById('edit-due-date').value = dueDate;
+        }
+
+        function showDeleteConfirm(assNum) {
+            if (confirm('Delete this assignment?')) {
+                location.href = '/delete_assignment/{{ subject_code }}/' + assNum + '/{{ semester_number }}/{{ department_id }}/{{ start_year }}';
+            }
+        }
+
+        window.addEventListener('click', function (event) {
+            if (!event.target.matches('.menu-btn')) {
+                document.querySelectorAll('.dropdown').forEach(drop => drop.style.display = 'none');
+                openDropdown = null;
+            }
+        });
+
+    </script>
+</head>
+
+<body>
+
+    <div class="sidebar">
+        <h2>AMS STAFF</h2>
+        <h2>{{ department_name }}</h2>
+        <a href="{{ url_for('staff_dashboard') }}">🏠 Dashboard</a>
+        <a
+            href="{{ url_for('subject_assignment', subject_code=subject_code, semester_number=semester_number, department_id=department_id, start_year=start_year) }}">
+            📝 Assignment</a>
+        <a href="/download_csv/{{ subject_code }}/{{ semester_number }}/{{ department_id }}/{{ start_year }}">⬇️
+            Download CSV</a>
+        <!-- <a href="#" onclick="sendReminder('{{ subject_code }}','{{ assignment_num }}')">⏰ Send Reminder</a> -->
+        <a href="/logout">🚪 Logout</a>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>{{ department_name }} - {{ subject_name }} (Sem {{ semester_number }}, {{ start_year }})</h1>
+            <button class="btn" onclick="toggleForm('add-form')">📝 Add Assignment</button>
+        </div>
+
+        <div id="add-form" class="form-container">
+            <form method="POST"
+                action="/add_assignment/{{ subject_code }}/{{ semester_number }}/{{ department_id }}/{{ start_year }}">
+                <input type="text" name="assignment_num" placeholder="Assignment Num" required>
+                <input type="text" name="assignment_name" placeholder="Assignment Name" required>
+                <input type="date" name="due_date" required>
+                <button type="submit" class="btn">Add</button>
+                <button type="button" class="btn" onclick="toggleForm('add-form')">Cancel</button>
+            </form>
+        </div>
+
+        <div id="edit-form" class="form-container">
+            <form method="POST" action="">
+                <input type="hidden" id="original-ass-num" name="original_assignment_num">
+                <input type="text" id="edit-ass-num" name="assignment_num">
+                <input type="text" id="edit-ass-name" name="assignment_name" placeholder="Assignment Name" required>
+                <input type="date" id="edit-due-date" name="due_date" required>
+                <button type="submit" class="btn"
+                    onclick="this.form.action='/edit_assignment/{{ subject_code }}/{{ semester_number }}/{{ department_id }}/{{ start_year }}'">
+                    Update
+                </button>
+                <button type="button" class="btn" onclick="toggleForm('edit-form')">Cancel</button>
+            </form>
+        </div>
+
+        <div class="assignment-container">
+            {% for ass in assignments %}
+            <div class="assignment-item">
+                <a href="/assignment/{{ subject_code }}/{{ ass[0] }}/{{ semester_number }}/{{ department_id }}/{{ start_year }}"
+                    class="assignment-btn">
+                    {{ ass[1] }} (Due: {{ ass[2] }})
+                </a>
+                <div class="menu">
+                    <button class="menu-btn" onclick="toggleDropdown('ass-{{ ass[0] }}')">⋮</button>
+                    <div class="dropdown" id="ass-{{ ass[0] }}">
+                        <button onclick="showEditForm('{{ ass[0] }}','{{ ass[1] }}','{{ ass[2] }}')">Edit</button>
+                        <button onclick="showDeleteConfirm('{{ ass[0] }}')">Delete</button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</body>
+
+</html>

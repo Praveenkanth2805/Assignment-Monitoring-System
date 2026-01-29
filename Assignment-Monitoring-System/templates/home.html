@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Assignment Monitoring System</title>
+    <!--link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"-->
+    <style>
+        /* Page-specific CSS for Home Page */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            text-align: center;
+            background: white;
+            padding: 50px 100px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            animation: fadeIn 1s;
+            width: 350px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.3s, background 0.3s;
+        }
+
+        .btn:hover {
+            background: #764ba2;
+            transform: scale(1.05);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to Assignment Monitoring System</h1>
+        <!--button class="btn" onclick="location.href='{{ url_for('admin_login') }}'">Admin</button>
+        <button class="btn" onclick="location.href='{{ url_for('staff_login') }}'">Staff</button-->
+        <button class="btn" onclick="location.href='/admin_login'">Admin</button>
+        <button class="btn" onclick="location.href='/staff_login'">Staff</button>
+    </div>
+</body>
+</html>

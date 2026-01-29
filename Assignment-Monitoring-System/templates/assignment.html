@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{ department_name }} - {{ subject_name }} - {{ assignment_name }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(180deg, #667eea, #764ba2);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            padding-top: 20px;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 22px;
+            letter-spacing: 1px;
+        }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid #fff;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        /* HEADER */
+        .header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 10px;
+            min-height: 80px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 20px;
+            text-align: center;
+            flex: 1;
+        }
+
+        /* BUTTONS */
+        .btn {
+            padding: 8px 16px;
+            border-radius: 5px;
+            background: #667eea;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin: 3px;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background: #764ba2;
+        }
+
+        /* SEARCH BAR */
+        .search-bar {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        /* LIST ITEM */
+        .list-item {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* STATUS BUTTON */
+        .status-btn {
+            padding: 5px 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .not-submitted {
+            background: red;
+            color: white;
+        }
+
+        .submitted {
+            background: green;
+            color: white;
+        }
+
+        .error,
+        .success {
+            color: green;
+            text-align: center;
+        }
+    </style>
+
+    <script>
+        function searchSubmissions() {
+            let input = document.getElementById('search').value.toLowerCase();
+            let status = document.getElementById('status').value;
+            let items = document.querySelectorAll('.list-item');
+            items.forEach(item => {
+                let text = item.textContent.toLowerCase();
+                let subStatus = item.querySelector('.status-btn').classList.contains('submitted') ? 'submitted' : 'not-submitted';
+                let match = text.includes(input) && (status === '' || subStatus.includes(status));
+                item.style.display = match ? 'flex' : 'none';
+            });
+        }
+
+        function toggleSubmission(btn, regno) {
+            let isSubmitted = btn.classList.contains('not-submitted');
+            btn.classList.toggle('not-submitted', !isSubmitted);
+            btn.classList.toggle('submitted', isSubmitted);
+            btn.textContent = isSubmitted ? 'Submitted' : 'Not Submitted';
+            fetch('/toggle_submission/' + regno + '/' + '{{ assignment_num }}' + '/' + '{{ subject_code }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'submitted=' + isSubmitted
+            });
+        }
+
+        function sendReminder(subject_code, assignment_num) {
+            if (confirm('Send WhatsApp reminder to all not submitted students?')) {
+                fetch(`/send_reminder/${subject_code}/${assignment_num}`, { method: 'POST' })
+                    .then(res => res.text())
+                    .then(msg => alert(msg));
+            }
+        }
+
+        function submitAll(submit) {
+            if (confirm('Submit all as ' + (submit ? 'submitted' : 'not submitted') + '?')) {
+                fetch('/submit_all/{{ subject_code }}/{{ assignment_num }}/{{ semester_number }}/{{ department_id }}/{{ start_year }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'submit_all=' + submit
+                }).then(() => location.reload());
+            }
+        }
+
+        function saveSubmissions() {
+            location.href = '/save_submissions/{{ subject_code }}/{{ assignment_num }}/{{ semester_number }}/{{ department_id }}/{{ start_year }}';
+        }
+
+        window.onload = () => {
+            let flashDivs = document.querySelectorAll(".success, .error");
+            flashDivs.forEach(div => {
+                setTimeout(() => div.remove(), 3000);
+            });
+        };
+
+        function sendReminder(subject_code, assignment_num, department_id) {
+            if (confirm('Send WhatsApp reminder to not submitted students of this department?')) {
+                fetch(`/send_reminder/${subject_code}/${assignment_num}/${department_id}`, { method: 'POST' })
+                    .then(res => res.text())
+                    .then(msg => alert(msg));
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <div class="sidebar">
+        <h2>AMS STAFF</h2>
+        <h2>{{ department_name }}</h2>
+        <a href="{{ url_for('staff_dashboard') }}">🏠 Dashboard</a>
+        <a
+            href="{{ url_for('subject_assignment', subject_code=subject_code, semester_number=semester_number, department_id=department_id, start_year=start_year) }}">📝
+            Assignment</a>
+        <a href="/download_csv/{{ subject_code }}/{{ semester_number }}/{{ department_id }}/{{ start_year }}">⬇️
+            Download CSV</a>
+        <!-- <a href="#" onclick="sendStaffReminder()">⏰ Send Reminder</a> -->
+        <a href="/logout">🚪 Logout</a>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>{{ department_name }} Semester {{ semester_number }} - {{ subject_name }} - {{ assignment_name }} ({{
+                start_year }})</h1>
+        </div>
+
+        <input type="text" id="search" class="search-bar" placeholder="Search by regno or name"
+            onkeyup="searchSubmissions()">
+        <select id="status" class="search-bar" onchange="searchSubmissions()">
+            <option value="">All</option>
+            <option value="submitted">Submitted</option>
+            <option value="not-submitted">Not Submitted</option>
+        </select>
+
+        <button class="btn" onclick="submitAll(true)">Submit All</button>
+        <button class="btn" onclick="submitAll(false)">Unsubmit All</button>
+        <button class="btn" onclick="saveSubmissions()">Save</button>
+        <button class="btn" onclick="sendReminder('{{ subject_code }}','{{ assignment_num }}','{{ department_id }}')">Send Reminder</button>
+
+        {% for sub in submissions %}
+        <div class="list-item">
+            <span>{{ sub[0] }} - {{ sub[1] }}</span>
+            <button class="status-btn {{ 'submitted' if sub[2] else 'not-submitted' }}"
+                onclick="toggleSubmission(this, '{{ sub[0] }}')">
+                {{ 'Submitted' if sub[2] else 'Not Submitted' }}
+            </button>
+        </div>
+        {% endfor %}
+        <div class="error">{{ get_flashed_messages()[0] if get_flashed_messages() else '' }}</div>
+    </div>
+</body>
+
+</html>

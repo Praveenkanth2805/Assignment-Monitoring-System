@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ department_name }} - Semester {{ semester_number }} Subjects</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(180deg, #667eea, #764ba2);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            padding-top: 20px;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 22px;
+            letter-spacing: 1px;
+        }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid #fff;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        /* HEADER */
+        .header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 10px;
+            min-height: 80px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 20px;
+            text-align: center;
+            flex: 1;
+        }
+
+
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.3s, background 0.3s;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            background: #764ba2;
+            transform: scale(1.05);
+        }
+
+        /* Container */
+        .container-box {
+            margin-top: 40px;
+            background: white;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Subject grid */
+        .subject-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .subject-item {
+            background: white;
+            width: 28%;
+            min-width: 180px;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .subject-btn {
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: black;
+        }
+
+        .dropdown {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            border-radius: 5px;
+            z-index: 1;
+        }
+
+        .dropdown button {
+            display: block;
+            width: 100%;
+            padding: 8px 10px;
+            border: none;
+            background: none;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .dropdown button:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .form-container {
+            display: none;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin: 20px 0;
+            animation: fadeIn 0.5s;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .success { color: green; text-align: center; }
+        .error { color: red; text-align: center; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+
+    <script>
+        let openDropdown = null;
+
+        function toggleDropdown(id) {
+            const el = document.getElementById(id);
+            if (openDropdown && openDropdown !== id) {
+                document.getElementById(openDropdown).style.display = 'none';
+            }
+            el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+            openDropdown = el.style.display === 'block' ? id : null;
+        }
+
+        function toggleForm(formId) {
+            const el = document.getElementById(formId);
+            el.style.display = el.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function showEditForm(subCode, subName, staffName, username) {
+            const form = document.getElementById('edit-form');
+            form.style.display = 'block';
+            document.getElementById('edit-sub-code').value = subCode;
+            document.getElementById('edit-sub-name').value = subName;
+            document.getElementById('edit-staff-name').value = staffName;
+            document.getElementById('edit-username').value = username;
+            document.getElementById('old-sub-code').value = subCode;
+        }
+
+        function showDeleteConfirm(subCode) {
+            if (confirm('Delete this subject?')) {
+                location.href = '/delete_subject/{{ department_id }}/{{ start_year }}/{{ semester_number }}/' + subCode;
+            }
+        }
+
+        // Auto-hide messages
+        window.addEventListener('DOMContentLoaded', () => {
+            const flash = document.getElementById('flash-messages');
+            if (flash) {
+                setTimeout(() => {
+                    flash.style.opacity = "0";
+                    setTimeout(() => flash.remove(), 500);
+                }, 3000);
+            }
+        });
+    </script>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>AMS TUTOR</h2>
+        <h2>{{ department_name }}</h2>
+        <a href="/department_page/{{ department_id }}/{{ start_year }}">🏠 Dashboard</a>
+        <a href="/student_list/{{ department_id }}/{{ start_year }}">🎓 Students</a>
+        <a href="/semester/{{ department_id }}/{{ start_year }}" class="active">📘 Semester</a>
+        <a href="/logout">🚪 Logout</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <h1>{{ department_name }} - Semester {{ semester_number }} Subjects</h1>
+            <button class="btn" onclick="toggleForm('add-form')">+ Add Subject</button>
+        </div>
+
+        <div class="container-box">
+            <div id="flash-messages">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="{{ 'error' if category == 'error' else 'success' }}">{{ message }}</div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+            </div>
+
+            <!-- Add Subject -->
+            <div id="add-form" class="form-container">
+                <form method="POST" action="/add_subject/{{ department_id }}/{{ start_year }}/{{ semester_number }}">
+                    <input type="text" name="subject_code" placeholder="Subject Code" required>
+                    <input type="text" name="subject_name" placeholder="Subject Name" required>
+                    <input type="text" name="staff_name" placeholder="Staff Name" required>
+                    <input type="text" name="username" placeholder="Username" required>
+                    <input type="password" name="password" placeholder="Password" required>
+                    <button type="submit" class="btn">Add</button>
+                    <button type="button" class="btn" onclick="toggleForm('add-form')">Cancel</button>
+                </form>
+            </div>
+
+            <!-- Edit Subject -->
+            <div id="edit-form" class="form-container">
+                <form method="POST" action="/edit_subject/{{ department_id }}/{{ start_year }}/{{ semester_number }}">
+                    <input type="hidden" id="old-sub-code" name="old_subject_code">
+                    <input type="text" id="edit-sub-code" name="subject_code" placeholder="Subject Code" required>
+                    <input type="text" id="edit-sub-name" name="subject_name" placeholder="Subject Name" required>
+                    <input type="text" id="edit-staff-name" name="staff_name" placeholder="Staff Name" required>
+                    <input type="text" id="edit-username" name="username" placeholder="Username" required>
+                    <input type="password" name="password" placeholder="Password" required>
+                    <button type="submit" class="btn">Update</button>
+                    <button type="button" class="btn" onclick="toggleForm('edit-form')">Cancel</button>
+                </form>
+            </div>
+
+            <!-- Subjects List -->
+            <div class="subject-container">
+                {% for sub in subjects %}
+                <div class="subject-item">
+                    <!-- <a href="/subject_assignment/{{ sub[0] }}/{{ semester_number }}/{{ department_id }}/{{ start_year }}" class="subject-btn">
+                        {{ sub[1] }}
+                    </a> -->
+                    <a class="subject-btn">
+                        {{ sub[1] }}
+                    </a>
+                    <div class="menu">
+                        <button class="menu-btn" onclick="toggleDropdown('sub-{{ sub[0] }}')">⋮</button>
+                        <div class="dropdown" id="sub-{{ sub[0] }}">
+                            <button onclick="showEditForm('{{ sub[0] }}','{{ sub[1] }}','{{ sub[2] if sub[2] else "" }}','{{ sub[3] if sub[3] else "" }}')">Edit</button>
+                            <button onclick="showDeleteConfirm('{{ sub[0] }}')">Delete</button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
