@@ -766,8 +766,8 @@ def save_submissions(subject_code, assignment_num, semester_number, department_i
     return redirect(url_for('assignment', subject_code=subject_code, assignment_num=assignment_num, semester_number=semester_number, department_id=department_id, start_year=start_year))
 
 # Send reminder
-account_sid = "ACeb29f3cc6b2e0080b21c6ebf917faafc"
-auth_token = "0b9cf490e06671409f7b5318521581cf"
+account_sid = "your account_sid" #i am remove my sid for security
+auth_token = "your auth token"   #i am remove my token for security
 client = Client(account_sid, auth_token)
 
 # @app.route('/send_reminder/<subject_code>/<assignment_num>', methods=['POST'])
